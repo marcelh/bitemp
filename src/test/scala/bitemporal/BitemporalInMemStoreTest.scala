@@ -7,7 +7,7 @@ import org.scalatest.FunSpec
 
 class BitemporalInMemStoreTest extends FunSpec with BitemporalStoreBehavior {
 
-    def emptyStore = { println("new store"); new BitemporalInMemStore[Value] }
+    def emptyStore = new BitemporalInMemStore
     
     describe("A BitemporalInMemoryStore") {
 

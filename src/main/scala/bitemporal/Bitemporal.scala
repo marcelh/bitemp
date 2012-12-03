@@ -25,26 +25,24 @@ import org.joda.time.DateTimeZone.UTC
 /**
  * Bi-temporal trait
  */
-trait Bitemporal[E] {
+trait Bitemporal {
     def trxTimestamp: DateTime
     def validInterval: Interval
 }
 
 /**
- * The entity class with a generic type for it's data (attribute value(s)).
+ * A bi-temporal entity.
  */
-case class Entity[V](
-        id: String,
-		value: V,
-		validInterval: Interval,
-		trxTimestamp: DateTime
-	) extends Bitemporal[V]
+trait BitemporalEntity extends Bitemporal {
+    def id: String
+    def values: Map[String, AttributeValue]
+}
 
 
 /**
  * An interface to store bi-temporal entities
  */
-trait BitemporalStore[V] {
+trait BitemporalStore {
 
     val startOfTime = new DateTime(0, 1, 1, 0, 0, UTC)
     val endOfTime = new DateTime(9999, 12, 31, 23, 59, UTC)
@@ -64,7 +62,7 @@ trait BitemporalStore[V] {
      */
     def get(id: String, 
             validAt: DateTime = DateTime.now, 
-            asOf: DateTime = DateTime.now): Option[Entity[V]]
+            asOf: DateTime = DateTime.now): Option[BitemporalEntity]
     
     /**
      * Modify and/or add an entity with the given value to the store.
@@ -73,13 +71,11 @@ trait BitemporalStore[V] {
      * The returned entity might have a validInterval that is larger than specified.
      * 
      * @param id the entity id (should not be null or empty)
-     * @param value the data for the entity
-     * @return the entity
+     * @param values the attribute values for the entity
+     * @return the created entity
      */
     def put(id: String,
-            value: V, 
-            validInterval: Interval): Entity[V]
-    
-    def dump: String
+            values: Set[AttributeValue], 
+            validInterval: Interval): BitemporalEntity
 }
 

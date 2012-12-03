@@ -5,11 +5,11 @@ import bitemporal.store.BitemporalInMemStore
 import org.joda.time.{DateTime,Interval}
 import org.scalatest.FunSpec
 
+/**
+ * Define behavior for BitemporalStore implementations.
+ */
 trait BitemporalStoreBehavior  { this: FunSpec =>
 
-    type Value = Int
-    type MapEntity = Entity[Value]
-    
 	val t0 = new DateTime(2000,1,1,0,0)
 	val t1 = new DateTime(2001,1,1,0,0)
 	val t2 = new DateTime(2002,1,1,0,0)
@@ -21,43 +21,66 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
 	val t8 = new DateTime(2008,1,1,0,0)
 	val t9 = new DateTime(2009,1,1,0,0)
     
-    def assertEmptyFor(s: BitemporalStore[Value], id: String, validAt: DateTime*) {
+    /**
+     * Check that there is no entity at each of the given time stamps
+     * 
+     * @param s the store
+     * @param id the entity id
+     * @param validAt the time stamps to check
+     */
+    def assertNoEntityFor(s: BitemporalStore, id: String, validAt: DateTime*) {
         validAt foreach (t => assert(s.get(id, t).isEmpty, "get(" + id + "," + t + ").isEmpty"))
     }
     
-    def assertEqualFor(s: BitemporalStore[Value], id: String, expected: Value, validAt: DateTime*) {
+    /**
+     * Check that the entity contains exactly the given set of values at each of the given time stamps
+     * 
+     * @param s the store
+     * @param id the entity id
+     * @param expectedValues the expected set of values
+     * @param validAt the time stamps to check
+     */
+    def assertEqualFor(s: BitemporalStore, id: String, expectedValues: Set[AttributeValue], validAt: DateTime*) {
         validAt foreach (t => {
             val actual = s.get(id, t)
-            assert(actual.isDefined, 
-                    "get(" + id + "," + t + ").isDefined\n" + s.dump)
-            assert(actual.get.value === expected, 
-                    "expected " + expected + "; got " + actual.get.value + "\n" + s.dump)
+            assert(actual.isDefined, "get(" + id + "," + t + ").isDefined\n")
+            val actualValues = actual.get.values.values.toSet
+            assert(actualValues === expectedValues, "expected " + expectedValues + "; got " + actual.get.values + "\n")
         })
     }
     
-    def bitemporalStore(store: => BitemporalStore[Value]) {
+    /**
+     * Test behavior of BitemporalStore
+     */
+    def bitemporalStore(store: => BitemporalStore) {
+        val attr1 = StringAttribute("attr1")
+        val attr2 = IntAttribute("attr2")
+        val v1a = attr1.createValue("abc")
+        val v1b = attr1.createValue("xyz")
+        val v2a = attr2.createValue(123)
+        val v2b = attr2.createValue(321)
 
         it("should return None on all timestamps if we didn't put anything in it") {
             val s = store
-            assertEmptyFor(s, "a", t0,t1,t2,t3,t4,t5,t6,t7,t8,t9)
+            assertNoEntityFor(s, "a", t0,t1,t2,t3,t4,t5,t6,t7,t8,t9)
         }
         
         it("should return either None or the value we just put in depending on the validAt timestamp") {
             val s = store
-            s.put("a", 1, new Interval(t1, t3))
+            s.put("e1", Set(v1a), new Interval(t1, t3))
 
-            assertEmptyFor(s, "a", t0, t3)
-            assertEqualFor(s, "a", 1, t1, t2)
+            assertNoEntityFor(s, "e1", t0, t3)
+            assertEqualFor(s, "e1", Set(v1a), t1, t2)
         }
 
         it("should return the latest inserted value") {
             val s = store
-    		s.put("a", 1, new Interval(t1, t4))
-            s.put("a", 2, new Interval(t3, t6))
+    		s.put("e1", Set(v1a,v2a), new Interval(t1, t4))
+            s.put("e1", Set(v1b,v2b), new Interval(t3, t6))
 
-            assertEmptyFor(s, "a", t0, t6)
-            assertEqualFor(s, "a", 1, t1, t2)
-            assertEqualFor(s, "a", 2, t3, t4, t5)
+            assertNoEntityFor(s, "e1", t0, t6)
+            assertEqualFor(s, "e1", Set(v1a,v2a), t1, t2)
+            assertEqualFor(s, "e1", Set(v1b,v2b), t3, t4, t5)
         }
     }
 }
