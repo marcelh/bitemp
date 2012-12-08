@@ -20,25 +20,28 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
 	val t7 = new DateTime(2007,1,1,0,0)
 	val t8 = new DateTime(2008,1,1,0,0)
 	val t9 = new DateTime(2009,1,1,0,0)
-    
+
+    val sa1 = StringAttribute("StrAttr1")
+    val ia1 = IntAttribute("IntAttr1")
+
     /**
-     * Check that there is no entity at each of the given time stamps
+     * Check that there is no entity at each of the given validity time stamps
      * 
      * @param s the store
      * @param id the entity id
-     * @param validAt the time stamps to check
+     * @param validAt the validity time stamps to check
      */
     def assertNoEntityFor(s: BitemporalStore, id: String, validAt: DateTime*) {
         validAt foreach (t => assert(s.get(id, t).isEmpty, "get(" + id + "," + t + ").isEmpty"))
     }
     
     /**
-     * Check that the entity contains exactly the given set of values at each of the given time stamps
+     * Check that the entity contains exactly the given set of values at each of the given validity time stamps
      * 
      * @param s the store
      * @param id the entity id
      * @param expectedValues the expected set of values
-     * @param validAt the time stamps to check
+     * @param validAt the validity time stamps to check
      */
     def assertEqualFor(s: BitemporalStore, id: String, expectedValues: Set[AttributeValue], validAt: DateTime*) {
         validAt foreach (t => {
@@ -50,9 +53,9 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
     }
     
     /**
-     * Test behavior of BitemporalStore
+     * Test valid time behavior of BitemporalStore
      */
-    def bitemporalStore(store: => BitemporalStore) {
+    def validTimeInBitemporalStore(store: => BitemporalStore) {
         val attr1 = StringAttribute("attr1")
         val attr2 = IntAttribute("attr2")
         val v1a = attr1.createValue("abc")
@@ -69,7 +72,7 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
             val s = store
             s.put("e1", Set(v1a), new Interval(t1, t3))
 
-            assertNoEntityFor(s, "e1", t0, t3)
+            assertNoEntityFor(s, "e1", t0,t3,t4)
             assertEqualFor(s, "e1", Set(v1a), t1, t2)
         }
 
@@ -81,6 +84,44 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
             assertNoEntityFor(s, "e1", t0, t6)
             assertEqualFor(s, "e1", Set(v1a,v2a), t1, t2)
             assertEqualFor(s, "e1", Set(v1b,v2b), t3, t4, t5)
+        }
+    }
+    
+    def mergedValidTimeInBitemporalStore(store: => BitemporalStore) {
+        
+        it("should return a merged record for two overlapping ranges") {
+            val s = store
+    		val v1 = sa1.createValue("aa")
+    		val v2 = ia1.createValue(1)
+    		s.put("e1", Set(v1,v2), new Interval(t1, t4))
+            s.put("e1", Set(v1,v2), new Interval(t3, t6))
+            val actual = s.get("e1", t3)
+            assert(actual.isDefined)
+            assert(actual.get.id === "e1")
+            assert(actual.get.validInterval === new Interval(t1, t6))
+        }
+        it("should return a merged record for two overlapping ranges with asOf for first stored entity") {
+            val s = store
+    		val v1 = sa1.createValue("aa")
+    		val v2 = ia1.createValue(1)
+    		s.put("e1", Set(v1,v2), new Interval(t1, t4))
+            s.put("e1", Set(v1,v2), new Interval(t3, t6))
+            val actual = s.get("e1", t2)
+            assert(actual.isDefined)
+            assert(actual.get.id === "e1")
+            assert(actual.get.validInterval === new Interval(t1, t6))
+        }
+        it("should return a merged record for three overlapping ranges") {
+            val s = store
+    		val v1 = sa1.createValue("aa")
+    		val v2 = ia1.createValue(1)
+    		s.put("e1", Set(v1,v2), new Interval(t1, t3))
+            s.put("e1", Set(v1,v2), new Interval(t4, t6))
+            s.put("e1", Set(v1,v2), new Interval(t2, t5))
+            val actual = s.get("e1", t3)
+            assert(actual.isDefined)
+            assert(actual.get.id === "e1")
+            assert(actual.get.validInterval === new Interval(t1, t6))
         }
     }
 }

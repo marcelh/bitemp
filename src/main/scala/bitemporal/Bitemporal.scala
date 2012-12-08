@@ -44,7 +44,9 @@ trait BitemporalEntity extends Bitemporal {
  */
 trait BitemporalStore {
 
+    /** The smallest possible time stamp that can be stored */ 
     val startOfTime = new DateTime(0, 1, 1, 0, 0, UTC)
+    /** The largest possible time stamp that can be stored */
     val endOfTime = new DateTime(9999, 12, 31, 23, 59, UTC)
 
     /**

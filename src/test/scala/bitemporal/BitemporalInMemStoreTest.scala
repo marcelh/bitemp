@@ -11,7 +11,8 @@ class BitemporalInMemStoreTest extends FunSpec with BitemporalStoreBehavior {
     
     describe("A BitemporalInMemoryStore") {
 
-        it should behave like bitemporalStore(emptyStore)
+        //it should behave like validTimeInBitemporalStore(emptyStore)
+        it should behave like mergedValidTimeInBitemporalStore(emptyStore)
         
     }
 }
