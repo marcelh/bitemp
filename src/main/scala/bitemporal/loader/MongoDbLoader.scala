@@ -9,26 +9,21 @@ import com.mongodb.casbah.MongoCollection
 import com.weiglewilczek.slf4s.Logging
 import org.bson.types.ObjectId
 
-class MongoDbLoader(mongoDb: MongoDB) extends Loader with Logging {
+class MongoDbLoader(mongoDb: MongoDB) extends Logging {
 
+    val BATCH_ID = "batch-id"
     val DATA_COLLECTION = "data"
     val META_COLLECTION = "meta"
         
-    def load(parser: Parser) {
+    def load(parser: BatchParser) {
     	val metaCol = mongoDb(META_COLLECTION)
     	val dataCol = mongoDb(DATA_COLLECTION)
     	val metaData = parser.metaData
-    	if (isLoaded(metaCol, metaData("sha1")))
-    	    logger.warn("Not loading " + metaData("sha1") + " as it is already known!")
+    	if (isLoaded(metaCol, parser.identifier))
+    	    logger.warn("Not loading batch '" + parser.identifier + "' as it is already known!")
 	    else {
-	        try {
-	        	val metaRef = storeMeta(metaCol, metaData)
-	        	while (parser.hasNext) {
-	        	    storeRecord(dataCol, parser.next, metaRef)
-	        	}
-	        } finally {
-	            parser.close
-	        }
+	    	val metaRef = storeMeta(metaCol, metaData + (BATCH_ID->parser.identifier))
+	        parser.processData(record => storeRecord(dataCol, record, metaRef))
 	    }
     }
     
@@ -43,8 +38,8 @@ class MongoDbLoader(mongoDb: MongoDB) extends Loader with Logging {
         collection += recordObj
     }
     
-    def isLoaded(collection: MongoCollection, sha1: Any): Boolean = {
-		val q = MongoDBObject("sha1" -> sha1)
+    def isLoaded(collection: MongoCollection, identifier: Any): Boolean = {
+		val q = MongoDBObject(BATCH_ID -> identifier)
 		collection.findOne(q).isDefined
     }
 }

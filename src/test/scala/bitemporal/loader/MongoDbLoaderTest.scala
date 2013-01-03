@@ -1,20 +1,11 @@
-package bitemporal;
+package bitemporal.loader
 
-import bitemporal._
-import bitemporal.store.BitemporalInMemStore
-import org.joda.time.{DateTime,Interval}
-import org.scalatest.FunSpec
-import bitemporal.loader.LineParser
-import scala.io.Source
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import com.mongodb.casbah.MongoConnection
-import bitemporal.loader.MongoDbLoader
-import bitemporal.loader.Parser
-import bitemporal.loader.TsvParser
 import java.io.File
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.FunSpec
+import com.mongodb.casbah.MongoConnection
 
-class MongoDbLoaderTest extends FunSpec {
+class MongoDbLoaderTest extends FunSpec with ShouldMatchers {
 
     describe("A MongoDbLoader") {
         it("should not load the same file twice") {
@@ -32,19 +23,17 @@ class MongoDbLoaderTest extends FunSpec {
             val m = MongoConnection()("testdb")
             m.dropDatabase()
             val loader = new MongoDbLoader(m)
-            loader.load(new TsvParser(new File("src/test/resources/test1.tsv")))
+            loader.load(new CsvBatchParser(new File("src/test/resources/test1.tsv"), "\t"))
         }
     }
     
-    def dummyParser: Parser = new Parser {
-        val iter = List(
-                Map("a" -> 1, "b" -> "A"),
-                Map("a" -> 2, "b" -> "B")).iterator
-        def id: String = "test1"
-	    def name: String = "Test 1"
-	    def metaData: Map[String, Any] = Map("sha1" -> 123)
-	    def hasNext: Boolean = iter.hasNext
-	    def next: Map[String, Any] = iter.next()
-	    def close {}
+    def dummyParser: BatchParser = new BatchParser {
+        
+        def metaData: Map[String, String] = Map("name"->"dummy")
+		def identifier: String = "abcdefg"
+		def processData(f: Map[String, Any] => Unit) {
+        	f(Map("a" -> 1, "b" -> "A"))
+            f(Map("a" -> 2, "b" -> "B"))
+        } 
     }
 }
