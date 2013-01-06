@@ -26,3 +26,5 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.9"
 libraryDependencies += "org.mockito" % "mockito-all" % "1.9.5"
 
 //libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "latest.integration"
+
+libraryDependencies += "com.yammer.metrics" % "metrics-scala_2.9.1" % "2.2.0" withSources()

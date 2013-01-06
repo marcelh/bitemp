@@ -5,5 +5,6 @@ trait BatchParser {
 
     def metaData: Map[String, String]
     def identifier: String
+    def name: String
     def processData(f: Map[String, Any] => Unit)
 }

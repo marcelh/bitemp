@@ -11,7 +11,7 @@ class CsvBatchParserTest extends FunSpec with ShouldMatchers {
         
         it("should parse an empty file") {
             val filename = "/dev/null"
-        	val p = new CsvBatchParser(new File(filename), "bla")
+        	val p = new CsvBatchParser(new File(filename), ' ')
         	assert(p.identifier != null, "identifier is null")
         	assert(!p.identifier.isEmpty, "identifier is empty string")
         	var count = 0
@@ -22,7 +22,7 @@ class CsvBatchParserTest extends FunSpec with ShouldMatchers {
         }
         it("should parse a file with only a header") {
             val filename = "src/test/resources/header-only.csv"
-            val p = new CsvBatchParser(new File(filename), " ")
+            val p = new CsvBatchParser(new File(filename), ' ')
             var count = 0
         	p.processData(_ => count = count + 1)
         	assert(count === 0)
@@ -31,7 +31,7 @@ class CsvBatchParserTest extends FunSpec with ShouldMatchers {
         }
         it("should parse a file with two records") {
             val filename = "src/test/resources/two-records.csv"
-            val p = new CsvBatchParser(new File(filename), " ")
+            val p = new CsvBatchParser(new File(filename), ' ')
             var records = ListBuffer[Map[String,Any]]()
         	p.processData(r => records += r)
         	assert(records.size === 2)

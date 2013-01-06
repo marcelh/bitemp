@@ -7,10 +7,11 @@ import scala.io.Source
 /**
  * Simple implementation of a BatchParser for parsing character-separated-values files.
  */
-class CsvBatchParser(val file: File, val separator: String) extends BatchParser {
+class CsvBatchParser(val file: File, val separator: Char) extends BatchParser {
 
     lazy val metaData: Map[String, String] = loadMetaData
 	lazy val identifier: String = createSha1Hash(file)
+	lazy val name: String = file.getPath()
     
     def processData(f: Map[String, Any] => Unit) {
         val source = Source.fromFile(file)
@@ -18,7 +19,6 @@ class CsvBatchParser(val file: File, val separator: String) extends BatchParser 
             val lines = source.getLines()
             val header = if (lines.hasNext) lines.next().split(separator).toList else List()
             lines.foreach( line => f(header.zip(line.split(separator)).toMap) )
-            println("header = " + header)
         } finally {
             source.close()
         }

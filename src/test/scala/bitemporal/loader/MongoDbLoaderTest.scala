@@ -23,12 +23,12 @@ class MongoDbLoaderTest extends FunSpec with ShouldMatchers {
             val m = MongoConnection()("testdb")
             m.dropDatabase()
             val loader = new MongoDbLoader(m)
-            loader.load(new CsvBatchParser(new File("src/test/resources/test1.tsv"), "\t"))
+            loader.load(new CsvBatchParser(new File("src/test/resources/test1.tsv"), '\t'))
         }
     }
     
     def dummyParser: BatchParser = new BatchParser {
-        
+        val name = "dummy"
         def metaData: Map[String, String] = Map("name"->"dummy")
 		def identifier: String = "abcdefg"
 		def processData(f: Map[String, Any] => Unit) {
