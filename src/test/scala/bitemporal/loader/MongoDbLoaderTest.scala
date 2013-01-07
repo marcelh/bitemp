@@ -4,25 +4,26 @@ import java.io.File
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FunSpec
 import com.mongodb.casbah.MongoConnection
+import bitemporal.Configuration
 
-class MongoDbLoaderTest extends FunSpec with ShouldMatchers {
+class MongoDbLoaderTest extends FunSpec with ShouldMatchers with Configuration with MongoCollections {
 
+    configure { MongoConnection()("testdb") }
+    
     describe("A MongoDbLoader") {
         it("should not load the same file twice") {
-            val m = MongoConnection()("testdb")
-            m.dropDatabase()
-            val loader = new MongoDbLoader(m)
+            mongoDB.dropDatabase()
+            val loader = new MongoDbLoader()
             loader.load(dummyParser)
-            assert(m("meta").size === 1)
-            assert(m("data").size === 2)
+            assert(metaCollection.size === 1)
+            assert(dataCollection.size === 2)
             loader.load(dummyParser)
-            assert(m("meta").size === 1)
-            assert(m("data").size === 2)
+            assert(metaCollection.size === 1)
+            assert(dataCollection.size === 2)
         }
         it("should load data from tsv files") {
-            val m = MongoConnection()("testdb")
-            m.dropDatabase()
-            val loader = new MongoDbLoader(m)
+            mongoDB.dropDatabase()
+            val loader = new MongoDbLoader()
             loader.load(new CsvBatchParser(new File("src/test/resources/test1.tsv"), '\t'))
         }
     }

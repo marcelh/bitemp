@@ -11,25 +11,21 @@ import com.weiglewilczek.slf4s.Logging
 import com.yammer.metrics.reporting.ConsoleReporter
 import com.yammer.metrics.scala.Instrumented
 
-class MongoDbLoader(mongoDb: MongoDB) extends Logging  with Instrumented {
+class MongoDbLoader extends Logging with MongoCollections with Instrumented {
 
 	val loadTiming = metrics.timer("load-time", "single-file", TimeUnit.MILLISECONDS, TimeUnit.SECONDS)
 	val recordsCounting = metrics.meter("records-count", "records", "single-file", TimeUnit.SECONDS)
 	
     val BATCH_ID = "batch-id"
-    val DATA_COLLECTION = "data"
-    val META_COLLECTION = "meta"
         
     def load(parser: BatchParser) {
         loadTiming.time {
-	    	val metaCol = mongoDb(META_COLLECTION)
-	    	val dataCol = mongoDb(DATA_COLLECTION)
 	    	val metaData = parser.metaData
-	    	if (isLoaded(metaCol, parser.identifier))
+	    	if (isLoaded(metaCollection, parser.identifier))
 	    	    logger.warn("Not loading '" + parser.name + "' as it is already known!")
 		    else {
-		    	val metaRef = storeMeta(metaCol, metaData + (BATCH_ID->parser.identifier))
-		        parser.processData(record => storeRecord(dataCol, record, metaRef))
+		    	val metaRef = storeMeta(metaCollection, metaData + (BATCH_ID->parser.identifier))
+		        parser.processData(record => storeRecord(dataCollection, record, metaRef))
 		    }
         }
     }
