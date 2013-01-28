@@ -1,6 +1,7 @@
 package bitemporal.store
 
 import bitemporal._
+import bitemporal.BitemporalStore.{startOfTime,endOfTime}
 import org.joda.time.{DateTime,Interval}
 
 /**
@@ -80,10 +81,9 @@ class BitemporalInMemStore extends BitemporalStore {
      * @return the stored entity
      */
     def put(id: String,
-            values: Set[AttributeValue],
+            values: Map[String, Any],
             validInterval: Interval = new Interval(startOfTime,endOfTime)): BitemporalEntity = {
-        val valuesMap = values.map(av => (av.attribute.id -> av)).toMap
-        val newRecord = InMemBitemporalEntity(id, valuesMap, validInterval, new DateTime)
+        val newRecord = InMemBitemporalEntity(id, values, validInterval, new DateTime)
         entities = newRecord :: entities
         newRecord
     }
@@ -99,7 +99,7 @@ class BitemporalInMemStore extends BitemporalStore {
 
 case class InMemBitemporalEntity(
         id: String,
-        values: Map[String, AttributeValue],
+        values: Map[String, Any],
     	validInterval: Interval,
     	trxTimestamp: DateTime = new DateTime
     ) extends BitemporalEntity

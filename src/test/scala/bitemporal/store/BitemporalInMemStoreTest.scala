@@ -1,8 +1,5 @@
-package bitemporal;
+package bitemporal.store;
 
-import bitemporal._
-import bitemporal.store.BitemporalInMemStore
-import org.joda.time.{DateTime,Interval}
 import org.scalatest.FunSpec
 
 class BitemporalInMemStoreTest extends FunSpec with BitemporalStoreBehavior {

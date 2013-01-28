@@ -35,19 +35,20 @@ trait Bitemporal {
  */
 trait BitemporalEntity extends Bitemporal {
     def id: String
-    def values: Map[String, AttributeValue]
+    def values: Map[String, Any]
 }
 
+object BitemporalStore {
+    /** The smallest possible time stamp that can be stored */ 
+    val startOfTime = new DateTime(0, 1, 1, 0, 0, UTC)
+    /** The largest possible time stamp that can be stored */
+    val endOfTime = new DateTime(9999, 12, 31, 23, 59, UTC)
+}
 
 /**
  * An interface to store bi-temporal entities
  */
 trait BitemporalStore {
-
-    /** The smallest possible time stamp that can be stored */ 
-    val startOfTime = new DateTime(0, 1, 1, 0, 0, UTC)
-    /** The largest possible time stamp that can be stored */
-    val endOfTime = new DateTime(9999, 12, 31, 23, 59, UTC)
 
     /**
      * Get the entity valid on and known at the specified times. 
@@ -77,7 +78,7 @@ trait BitemporalStore {
      * @return the created entity
      */
     def put(id: String,
-            values: Set[AttributeValue], 
+            values: Map[String, Any], 
             validInterval: Interval): BitemporalEntity
 }
 

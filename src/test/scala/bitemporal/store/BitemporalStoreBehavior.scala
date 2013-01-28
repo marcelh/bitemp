@@ -1,9 +1,9 @@
-package bitemporal;
+package bitemporal.store;
 
 import bitemporal._
-import bitemporal.store.BitemporalInMemStore
 import org.joda.time.{DateTime,Interval}
 import org.scalatest.FunSpec
+import bitemporal.BitemporalStore
 
 /**
  * Define behavior for BitemporalStore implementations.
@@ -21,8 +21,8 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
 	val t8 = new DateTime(2008,1,1,0,0)
 	val t9 = new DateTime(2009,1,1,0,0)
 
-    val sa1 = StringAttribute("StrAttr1")
-    val ia1 = IntAttribute("IntAttr1")
+    val sa1 = "StrAttr1"
+    val ia1 = "IntAttr1"
 
     /**
      * Check that there is no entity at each of the given validity time stamps
@@ -43,7 +43,7 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
      * @param expectedValues the expected set of values
      * @param validAt the validity time stamps to check
      */
-    def assertEqualFor(s: BitemporalStore, id: String, expectedValues: Set[AttributeValue], validAt: DateTime*) {
+    def assertEqualFor(s: BitemporalStore, id: String, expectedValues: Map[String, Any], validAt: DateTime*) {
         validAt foreach (t => {
             val actual = s.get(id, t)
             assert(actual.isDefined, "get(" + id + "," + t + ").isDefined\n")
@@ -56,12 +56,6 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
      * Test valid time behavior of BitemporalStore
      */
     def validTimeInBitemporalStore(store: => BitemporalStore) {
-        val attr1 = StringAttribute("attr1")
-        val attr2 = IntAttribute("attr2")
-        val v1a = attr1.createValue("abc")
-        val v1b = attr1.createValue("xyz")
-        val v2a = attr2.createValue(123)
-        val v2b = attr2.createValue(321)
 
         it("should return None on all timestamps if we didn't put anything in it") {
             val s = store
@@ -70,54 +64,56 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
         
         it("should return either None or the value we just put in depending on the validAt timestamp") {
             val s = store
-            s.put("e1", Set(v1a), new Interval(t1, t3))
+            s.put("e1", Map("attr1" -> "abc"), new Interval(t1, t3))
 
             assertNoEntityFor(s, "e1", t0,t3,t4)
-            assertEqualFor(s, "e1", Set(v1a), t1, t2)
+            assertEqualFor(s, "e1", Map("attr1" -> "abc"), t1, t2)
         }
 
         it("should return the latest inserted value") {
             val s = store
-    		s.put("e1", Set(v1a,v2a), new Interval(t1, t4))
-            s.put("e1", Set(v1b,v2b), new Interval(t3, t6))
+    		s.put("e1", Map("attr1" -> "abc", "attr2" -> 123), new Interval(t1, t4))
+            s.put("e1", Map("attr1" -> "xyz", "attr2" -> 321), new Interval(t3, t6))
 
             assertNoEntityFor(s, "e1", t0, t6)
-            assertEqualFor(s, "e1", Set(v1a,v2a), t1, t2)
-            assertEqualFor(s, "e1", Set(v1b,v2b), t3, t4, t5)
+            assertEqualFor(s, "e1", Map("attr1" -> "abc", "attr2" -> 123), t1, t2)
+            assertEqualFor(s, "e1", Map("attr1" -> "xyz", "attr2" -> 321), t3, t4, t5)
         }
     }
     
     def mergedValidTimeInBitemporalStore(store: => BitemporalStore) {
-        
+
         it("should return a merged record for two overlapping ranges") {
             val s = store
-    		val v1 = sa1.createValue("aa")
-    		val v2 = ia1.createValue(1)
-    		s.put("e1", Set(v1,v2), new Interval(t1, t4))
-            s.put("e1", Set(v1,v2), new Interval(t3, t6))
+    		val v1 = "aa"
+    		val v2 = 1
+    		s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t1, t4))
+            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t3, t6))
             val actual = s.get("e1", t3)
             assert(actual.isDefined)
             assert(actual.get.id === "e1")
             assert(actual.get.validInterval === new Interval(t1, t6))
         }
+        
         it("should return a merged record for two overlapping ranges with asOf for first stored entity") {
             val s = store
-    		val v1 = sa1.createValue("aa")
-    		val v2 = ia1.createValue(1)
-    		s.put("e1", Set(v1,v2), new Interval(t1, t4))
-            s.put("e1", Set(v1,v2), new Interval(t3, t6))
+    		val v1 = "aa"
+    		val v2 = 1
+    		s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t1, t4))
+            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t3, t6))
             val actual = s.get("e1", t2)
             assert(actual.isDefined)
             assert(actual.get.id === "e1")
             assert(actual.get.validInterval === new Interval(t1, t6))
         }
+        
         it("should return a merged record for three overlapping ranges") {
             val s = store
-    		val v1 = sa1.createValue("aa")
-    		val v2 = ia1.createValue(1)
-    		s.put("e1", Set(v1,v2), new Interval(t1, t3))
-            s.put("e1", Set(v1,v2), new Interval(t4, t6))
-            s.put("e1", Set(v1,v2), new Interval(t2, t5))
+    		val v1 = "aa"
+    		val v2 = 1
+    		s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t1, t3))
+            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t4, t6))
+            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t2, t5))
             val actual = s.get("e1", t3)
             assert(actual.isDefined)
             assert(actual.get.id === "e1")

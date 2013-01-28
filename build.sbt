@@ -15,7 +15,7 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M5"
 
 libraryDependencies += "junit" % "junit" % "4.10"
 
-libraryDependencies += "org.mongodb" %% "casbah" % "2.4.1"
+libraryDependencies += "org.mongodb" %% "casbah" % "2.5.0"
 
 libraryDependencies += "com.weiglewilczek.slf4s" % "slf4s_2.9.1" % "1.0.7"
 
@@ -28,3 +28,11 @@ libraryDependencies += "org.mockito" % "mockito-all" % "1.9.5"
 //libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "latest.integration"
 
 libraryDependencies += "com.yammer.metrics" % "metrics-scala_2.9.1" % "2.2.0" withSources()
+
+libraryDependencies += "com.yammer.metrics" % "metrics-annotation" % "2.2.0" withSources()
+
+libraryDependencies += "com.typesafe" % "config" % "1.0.0"
+
+libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.1-seq"
+
+libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.1-seq"
