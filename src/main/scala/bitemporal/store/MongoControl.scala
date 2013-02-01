@@ -4,6 +4,7 @@ import com.typesafe.config.ConfigFactory
 import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.MongoDB
 import com.typesafe.config.Config
+import com.mongodb.casbah.commons.MongoDBObject
 
 trait MongoControl {
 
@@ -32,4 +33,8 @@ trait MongoControl {
     
     def attrsCollection(conn: MongoConnection) = mongoDB(conn)(config.getString("mongo.collections.attrs"))
     def dataCollection(conn: MongoConnection) = mongoDB(conn)(config.getString("mongo.collections.data"))
+    
+    def ensureIndexes(conn: MongoConnection) {
+        attrsCollection(conn).ensureIndex(MongoDBObject(("id" -> 1), ("tx" -> 1), ("valid-from" -> 1)))
+    }
 }
