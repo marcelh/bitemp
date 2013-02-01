@@ -47,7 +47,7 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
         validAt foreach (t => {
             val actual = s.get(id, t)
             assert(actual.isDefined, "get(" + id + "," + t + ").isDefined\n")
-            val actualValues = actual.get.values.values.toSet
+            val actualValues = actual.get.values
             assert(actualValues === expectedValues, "expected " + expectedValues + "; got " + actual.get.values + "\n")
         })
     }

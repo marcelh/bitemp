@@ -33,22 +33,22 @@ class BitemporalMongoDbStoreTest extends FunSpec with BitemporalStoreBehavior wi
     }
     
     describe("A BitemporalMongoDbStore") {
+    	
+    	it("should be able to store something") {
+    		val s = emptyStore
+    				try {
+    					1 to 1000 foreach(i => 
+    					s.put("someid"+i, Map("aap" -> "noot"), new Interval(startOfTime, endOfTime))
+    							)
+    				} catch {
+    				case t:Throwable => 
+    				println("Caught: " + t.getMessage())
+    				Thread.sleep(60*1000)
+    				}
+    	}
 
-        //it should behave like validTimeInBitemporalStore(emptyStore)
+        it should behave like validTimeInBitemporalStore(emptyStore)
         
-        //it should behave like mergedValidTimeInBitemporalStore(emptyStore)
-        
-        it("should be able to store something") {
-            val s = emptyStore
-            try {
-            1 to 10000 foreach(i => 
-            	s.put("someid"+i, Map("aap" -> "noot"), new Interval(startOfTime, endOfTime))
-        	)
-            } catch {
-                case t:Throwable => 
-                	println("Caught: " + t.getMessage())
-                    Thread.sleep(60*1000)
-            }
-        }
+        it should behave like mergedValidTimeInBitemporalStore(emptyStore)
     }
 }

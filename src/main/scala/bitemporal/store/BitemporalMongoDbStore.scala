@@ -15,15 +15,25 @@ import bitemporal.BitemporalEntity
 import bitemporal.BitemporalStore
 import com.mongodb.casbah.MongoCollection
 import com.mongodb.casbah.MongoConnection
+import com.weiglewilczek.slf4s.Logging
+import com.mongodb.casbah.query.Implicits._
+import com.mongodb.DBObject
+import com.mongodb.casbah.Imports._
+
 
 case class BitemporalMongoDbEntity(
 		id: String,
-		values: Map[String, Any],
+		allValues: Map[String, Any],
         trxTimestamp: DateTime,
         validInterval: Interval
-    ) extends BitemporalEntity
-        
-class BitemporalMongoDbStore(val config: Config) extends BitemporalStore with Instrumented with MongoControl {
+    ) extends BitemporalEntity {
+    
+    val specialKeys = Set("_id", "id", "valid-from", "valid-until", "tx")
+	def values: Map[String, Any] = allValues filter { case (k, v) => !specialKeys.contains(k) }
+}
+
+class BitemporalMongoDbStore(val config: Config) 
+		extends BitemporalStore with Instrumented with MongoControl with Logging {
     
     import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
     RegisterJodaTimeConversionHelpers()
@@ -35,21 +45,20 @@ class BitemporalMongoDbStore(val config: Config) extends BitemporalStore with In
             validAt: DateTime = DateTime.now, 
             asOf: DateTime = DateTime.now): Option[BitemporalEntity] = { 
         
+        logger.debug("get(%s, validAt=%s, asOf=%s)".format(id, validAt, asOf))
+        
         getTiming.time {
             usingMongo { conn =>
-		        val qry = MongoDBObject("id" -> id)
-		        val cursor = dataCollection(conn).find(qry)
-		        val matching = for {
-		        	obj <- cursor
-		            if obj.containsField("valid-from")
-		            if validAt.isAfter(obj("valid-from").asInstanceOf[DateTime])
-		            if obj.containsField("valid-until")
-		            if validAt.isBefore(obj("valid-until").asInstanceOf[DateTime])
-		            if obj.containsField("tx")
-		            if asOf.isAfter(obj("tx").asInstanceOf[DateTime])
-		        } yield obj
-				if (matching.hasNext)
-				    Some(toEntity(matching.next))
+		        val qry: DBObject = ("tx" $lte asOf) ++ 
+		        					("valid-from" $lte validAt) ++ 
+		        					("valid-until" $gt validAt) ++
+		        					("id" -> id)
+		        val cursor = dataCollection(conn).find(qry).sort(MongoDBObject("tx" -> -1)).limit(1)
+				if (cursor.hasNext) {
+				    val ent = toEntity(cursor.next)
+				    logger.debug("get result: " + ent)
+				    Some(ent)
+				}
 			    else
 			        None
             }
@@ -60,7 +69,10 @@ class BitemporalMongoDbStore(val config: Config) extends BitemporalStore with In
             values: Map[String, Any], 
             validInterval: Interval): BitemporalEntity = {
         
+        logger.debug("put(%s, %s, %s)".format(id, values, validInterval))
+        
 		// TODO merge valid interval with existing entities
+        
     		
 		def interval2map(iv: Interval): Map[String, Any] = {
 				Map("valid-from" -> iv.getStart(), "valid-until" -> iv.getEnd())
@@ -80,7 +92,7 @@ class BitemporalMongoDbStore(val config: Config) extends BitemporalStore with In
     
     private def toEntity(obj: MongoDBObject): BitemporalEntity = {
         val id = obj.getAs[String]("id").get
-        val values = Map[String,Any]()
+        val values = obj.map { case (k,v) => (k -> v)} .toMap
         val tx = obj.getAs[DateTime]("tx").get
         val start = obj.getAs[DateTime]("valid-from").get
         val end   = obj.getAs[DateTime]("valid-until").get
