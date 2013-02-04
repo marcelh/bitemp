@@ -23,13 +23,10 @@ import com.mongodb.casbah.Imports._
 
 case class BitemporalMongoDbEntity(
 		id: String,
-		allValues: Map[String, Any],
+		values: Map[String, Any],
         trxTimestamp: DateTime,
         validInterval: Interval
     ) extends BitemporalEntity {
-    
-    val specialKeys = Set("_id", "id", "valid-from", "valid-until", "tx")
-	def values: Map[String, Any] = allValues filter { case (k, v) => !specialKeys.contains(k) }
 }
 
 class BitemporalMongoDbStore(val config: Config) 
@@ -45,6 +42,16 @@ class BitemporalMongoDbStore(val config: Config)
             validAt: DateTime = DateTime.now, 
             asOf: DateTime = DateTime.now): Option[BitemporalEntity] = { 
         
+    	/* Convert MongoDB object to BitemporalEntity */
+    	def toEntity(obj: MongoDBObject): BitemporalEntity = {
+    			val id = obj.getAs[String]("id").get
+    					val values = obj.map { case (k,v) => (k -> v)} .toMap
+    					val tx = obj.getAs[DateTime]("tx").get
+    					val start = obj.getAs[DateTime]("valid-from").get
+    					val end   = obj.getAs[DateTime]("valid-until").get
+    					BitemporalMongoDbEntity(id, values, tx, new Interval(start, end))
+    	}
+    	
         logger.debug("get(%s, validAt=%s, asOf=%s)".format(id, validAt, asOf))
         
         getTiming.time {
@@ -65,15 +72,15 @@ class BitemporalMongoDbStore(val config: Config)
         }
     }
     
+    /* 
+     * new entries are simply put as-is in MongoDB
+     */
     def put(id: String,
             values: Map[String, Any], 
             validInterval: Interval): BitemporalEntity = {
         
         logger.debug("put(%s, %s, %s)".format(id, values, validInterval))
         
-		// TODO merge valid interval with existing entities
-        
-    		
 		def interval2map(iv: Interval): Map[String, Any] = {
 				Map("valid-from" -> iv.getStart(), "valid-until" -> iv.getEnd())
 		}
@@ -90,12 +97,4 @@ class BitemporalMongoDbStore(val config: Config)
 		}
     }
     
-    private def toEntity(obj: MongoDBObject): BitemporalEntity = {
-        val id = obj.getAs[String]("id").get
-        val values = obj.map { case (k,v) => (k -> v)} .toMap
-        val tx = obj.getAs[DateTime]("tx").get
-        val start = obj.getAs[DateTime]("valid-from").get
-        val end   = obj.getAs[DateTime]("valid-until").get
-        BitemporalMongoDbEntity(id, values, tx, new Interval(start, end))
-    }
 }

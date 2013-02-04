@@ -18,58 +18,17 @@ class BitemporalInMemStore extends BitemporalStore {
 
 	/**
 	 * Search for the first matching entity given the id, validAt and asOf time stamp in list of entities. 
-	 * This first matched entity is then merged with all entities having the same id and values.
 	 * 
 	 * @param id the entity id to search
 	 * @param validAt the time stamp at which the entity must be valid
 	 * @param asOf the time stamp at which the entity must have been available in the store
-	 * @return the merged entity if any
+	 * @return the entity if any
 	 */
 	def get(id: String, 
             validAt: DateTime = DateTime.now, 
             asOf: DateTime = DateTime.now): Option[BitemporalEntity] =
     {
-		def matches(entity: BitemporalEntity): Boolean = {
-				(entity.trxTimestamp.isBefore(asOf) || entity.trxTimestamp.isEqual(asOf)) &&
-				entity.validInterval.contains(validAt) &&
-				entity.id == id
-		}
-		
-		def mergeable(e1: BitemporalEntity, e2: BitemporalEntity): Boolean = {
-		    e1.id == e2.id &&
-		    (e1.trxTimestamp.isBefore(asOf) || e1.trxTimestamp.isEqual(asOf)) &&
-		    e1.values == e2.values &&
-		    (e1.validInterval.abuts(e2.validInterval) || e1.validInterval.overlaps(e2.validInterval))
-		}
-		
-		def mergeInterval(i1: Interval, i2: Interval): Interval = {
-		    new Interval(
-		            math.min(i1.getStartMillis(), i2.getStartMillis()), 
-		            math.max(i1.getEndMillis(), i2.getEndMillis()))
-		}
-		
-		def mergeEntities(e1: BitemporalEntity, e2: BitemporalEntity): BitemporalEntity = {
-		    if (mergeable(e1, e2))
-		        InMemBitemporalEntity(e1.id, 
-		                e1.values, 
-		                mergeInterval(e1.validInterval, e2.validInterval), 
-		                e1.trxTimestamp)
-		    else
-		        e1
-		}
-		
-		def mergeValidInterval(entity: BitemporalEntity, store: List[BitemporalEntity]): BitemporalEntity = {
-		    store match {
-		        case Nil => entity
-		        case head :: tail => mergeValidInterval(mergeEntities(entity, head), tail)
-		    }
-		}
-		
-        val first = entities find (matches(_))
-        if (first.isDefined)
-        	Some(mergeValidInterval(first.get, entities))
-        else
-        	None
+        entities find ( _.matches(id, validAt, asOf) )
     }
     
     /**

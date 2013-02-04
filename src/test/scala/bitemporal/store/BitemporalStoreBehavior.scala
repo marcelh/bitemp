@@ -21,9 +21,12 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
 	val t8 = new DateTime(2008,1,1,0,0)
 	val t9 = new DateTime(2009,1,1,0,0)
 
-    val sa1 = "StrAttr1"
-    val ia1 = "IntAttr1"
-
+	/**
+	 * Filter to remove implementation dependent values from the actual map returned from the underlaying store.
+	 * Can be overridden for implementation specific tests.
+	 */
+	def filterActual(orig: Map[String, Any]): Map[String, Any] = orig
+	
     /**
      * Check that there is no entity at each of the given validity time stamps
      * 
@@ -47,8 +50,8 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
         validAt foreach (t => {
             val actual = s.get(id, t)
             assert(actual.isDefined, "get(" + id + "," + t + ").isDefined\n")
-            val actualValues = actual.get.values
-            assert(actualValues === expectedValues, "expected " + expectedValues + "; got " + actual.get.values + "\n")
+            val actualValues = filterActual(actual.get.values)
+            assert(actualValues === expectedValues, "expected " + expectedValues + "; got " + actualValues + "\n")
         })
     }
     
@@ -79,45 +82,17 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
             assertEqualFor(s, "e1", Map("attr1" -> "abc", "attr2" -> 123), t1, t2)
             assertEqualFor(s, "e1", Map("attr1" -> "xyz", "attr2" -> 321), t3, t4, t5)
         }
-    }
-    
-    def mergedValidTimeInBitemporalStore(store: => BitemporalStore) {
 
-        it("should return a merged record for two overlapping ranges") {
-            val s = store
-    		val v1 = "aa"
-    		val v2 = 1
-    		s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t1, t4))
-            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t3, t6))
-            val actual = s.get("e1", t3)
-            assert(actual.isDefined)
-            assert(actual.get.id === "e1")
-            assert(actual.get.validInterval === new Interval(t1, t6))
-        }
-        
-        it("should return a merged record for two overlapping ranges with asOf for first stored entity") {
-            val s = store
-    		val v1 = "aa"
-    		val v2 = 1
-    		s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t1, t4))
-            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t3, t6))
-            val actual = s.get("e1", t2)
-            assert(actual.isDefined)
-            assert(actual.get.id === "e1")
-            assert(actual.get.validInterval === new Interval(t1, t6))
-        }
-        
-        it("should return a merged record for three overlapping ranges") {
-            val s = store
-    		val v1 = "aa"
-    		val v2 = 1
-    		s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t1, t3))
-            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t4, t6))
-            s.put("e1", Map("StrAttr1" -> v1, "IntAttr1" -> v2), new Interval(t2, t5))
-            val actual = s.get("e1", t3)
-            assert(actual.isDefined)
-            assert(actual.get.id === "e1")
-            assert(actual.get.validInterval === new Interval(t1, t6))
+        it("should return the correct value when multiple overlapping intervals are present") {
+        	val s = store
+    		s.put("e1", Map("attr1" -> 1), new Interval(t0, t6))
+            s.put("e1", Map("attr1" -> 2), new Interval(t2, t9))
+            s.put("e1", Map("attr1" -> 3), new Interval(t4, t6))
+
+            assertNoEntityFor(s, "e1", t9)
+            assertEqualFor(s, "e1", Map("attr1" -> 1), t0, t1)
+            assertEqualFor(s, "e1", Map("attr1" -> 2), t2, t3, t6, t7, t8)
+            assertEqualFor(s, "e1", Map("attr1" -> 3), t4, t5)
         }
     }
 }
