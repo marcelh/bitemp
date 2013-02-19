@@ -55,7 +55,7 @@ trait BitemporalEntity extends Bitemporal {
 	def overlapsOrAbutsWith(interval: Interval): Boolean = 
         this.validInterval.abuts(interval) || this.validInterval.overlaps(interval)
 		
-    /**
+    /* *
      * Returns true if this entity can be merged with that entity.
      * Two entities can be merged when:
      *   - their ids are the same
@@ -64,12 +64,13 @@ trait BitemporalEntity extends Bitemporal {
      * 
      * @param that the entity to compare with
      * @return true if it can be merged, false if not
-     */
+     * /
     def isMergeableWith(that: BitemporalEntity): Boolean = {
 	    this.id == that.id &&
 	    this.values == that.values &&
 	    overlapsOrAbutsWith(that.validInterval)
 	}
+	*/
 }
 
 object BitemporalStore {
@@ -85,7 +86,7 @@ object BitemporalStore {
 trait BitemporalStore {
 
     /**
-     * Get the entity valid on and known at the specified times. 
+     * Get the entity valid on and known at the specified time. 
      * <p>
      * More formally: find the entity which matches the given id, has a validInterval that contains the given validAt 
      * time-stamp, has a trxTimestamp time-stamp that is the same or is before the given asOf time-stamp AND there 
