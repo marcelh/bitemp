@@ -1,7 +1,7 @@
 package bitemporal
 
-import org.joda.time.{DateTime,Interval}
-import org.joda.time.DateTimeZone.UTC
+import org.joda.time.DateTime
+import org.joda.time.Interval
 
 /**
  * Bi-temporal trait with the two time dimensions.
@@ -55,7 +55,7 @@ trait BitemporalEntity extends Bitemporal {
 	def overlapsOrAbutsWith(interval: Interval): Boolean = 
         this.validInterval.abuts(interval) || this.validInterval.overlaps(interval)
 		
-    /**
+    /* *
      * Returns true if this entity can be merged with that entity.
      * Two entities can be merged when:
      *   - their ids are the same
@@ -64,55 +64,11 @@ trait BitemporalEntity extends Bitemporal {
      * 
      * @param that the entity to compare with
      * @return true if it can be merged, false if not
-     */
+     * /
     def isMergeableWith(that: BitemporalEntity): Boolean = {
 	    this.id == that.id &&
 	    this.values == that.values &&
 	    overlapsOrAbutsWith(that.validInterval)
 	}
+	*/
 }
-
-object BitemporalStore {
-    /** The smallest possible time stamp that can be stored */ 
-    val startOfTime = new DateTime(0, 1, 1, 0, 0, UTC)
-    /** The largest possible time stamp that can be stored */
-    val endOfTime = new DateTime(9999, 12, 31, 23, 59, UTC)
-}
-
-/**
- * An interface to store bi-temporal entities
- */
-trait BitemporalStore {
-
-    /**
-     * Get the entity valid on and known at the specified times. 
-     * <p>
-     * More formally: find the entity which matches the given id, has a validInterval that contains the given validAt 
-     * time-stamp, has a trxTimestamp time-stamp that is the same or is before the given asOf time-stamp AND there 
-     * exists no other entity which matches the same conditions but has an asOf between the first found entity 
-     * and the given trxTimestamp time-stamp.
-     * 
-     * @param id the entity id (should not be null or empty)
-     * @param validAt at which time the entity should be valid
-     * @param asOf at which time the entity should have been in the store
-     * @return Some[Entity] or None when no such entity exists in the store
-     */
-    def get(id: String, 
-            validAt: DateTime = DateTime.now, 
-            asOf: DateTime = DateTime.now): Option[BitemporalEntity]
-    
-    /**
-     * Modify and/or add an entity with the given value to the store.
-     * <p>
-     * Depending on the implementation entities could be split, merged or created.
-     * The returned entity might have a validInterval that is larger than specified.
-     * 
-     * @param id the entity id (should not be null or empty)
-     * @param values the attribute values for the entity
-     * @return the created entity
-     */
-    def put(id: String,
-            values: Map[String, Any], 
-            validInterval: Interval): BitemporalEntity
-}
-

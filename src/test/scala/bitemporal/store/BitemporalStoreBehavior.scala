@@ -3,7 +3,7 @@ package bitemporal.store;
 import bitemporal._
 import org.joda.time.{DateTime,Interval}
 import org.scalatest.FunSpec
-import bitemporal.BitemporalStore
+import bitemporal.BitemporalRepository
 
 /**
  * Define behavior for BitemporalStore implementations.
@@ -34,7 +34,7 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
      * @param id the entity id
      * @param validAt the validity time stamps to check
      */
-    def assertNoEntityFor(s: BitemporalStore, id: String, validAt: DateTime*) {
+    def assertNoEntityFor(s: BitemporalRepository, id: String, validAt: DateTime*) {
         validAt foreach (t => assert(s.get(id, t).isEmpty, "get(" + id + "," + t + ").isEmpty"))
     }
     
@@ -46,7 +46,7 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
      * @param expectedValues the expected set of values
      * @param validAt the validity time stamps to check
      */
-    def assertEqualFor(s: BitemporalStore, id: String, expectedValues: Map[String, Any], validAt: DateTime*) {
+    def assertEqualFor(s: BitemporalRepository, id: String, expectedValues: Map[String, Any], validAt: DateTime*) {
         validAt foreach (t => {
             val actual = s.get(id, t)
             assert(actual.isDefined, "get(" + id + "," + t + ").isDefined\n")
@@ -58,7 +58,7 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
     /**
      * Test valid time behavior of BitemporalStore
      */
-    def validTimeInBitemporalStore(store: => BitemporalStore) {
+    def validTimeInBitemporalStore(store: => BitemporalRepository) {
 
         it("should return None on all timestamps if we didn't put anything in it") {
             val s = store
