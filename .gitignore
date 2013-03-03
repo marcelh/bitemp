@@ -5,3 +5,4 @@
 /target
 /.cache
 /.settings
+/.scala_dependencies
