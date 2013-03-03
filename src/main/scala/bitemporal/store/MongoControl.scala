@@ -5,14 +5,23 @@ import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.MongoDB
 import com.typesafe.config.Config
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.MongoCollection
 
 /**
- * Mongo DB connection control trait
+ * Trait to control MongDB connections, databases and collections.
  */
 trait MongoControl {
 
     /**
-     * To be injected configuration object
+     * Configuration object for used by this trait to connect to a MongoDB instance.
+     * Configuration properties used by this trait:
+     *  - mongo.host: host name or IP number where MongoDB is running
+     *  - mongo.port: port number of the MongoDB instance
+     *  - mongo.database: name of the MongoDB database
+     *  - mongo.collections.loader: name of the collection with info about loaded files
+     *  - mongo.collections.bitemp: name of the collection for the bi-temporal data
+     * 
+     * @return the configuration object containing MongoDB connection properties and collection names.
      */
     def config: Config
     
@@ -28,21 +37,19 @@ trait MongoControl {
     }
 
     /**
-     * Apply function to an explicitly given Mongo DB connection.
+     * Call function with given MongoConnection, closing the connection afterwards.
      * 
-     * @param conn the connection object as returned from 'mongoConnection'.
-     * @param f the function to apply.
-     * @return the result of function application.
+     * @param conn the MongoConnection
+     * @param f the function to call
+     * @return return value of the function
      */
-    def using[T](conn: MongoConnection)(f: MongoConnection => T): T = {
-        // TODO use connection pool
+    def using[T](conn: MongoConnection)(f: MongoConnection => T): T =
         try {
             f(conn)
         }
         finally {
             conn.close()
         }
-    }
     
     /**
      * Apply function to a Mongo DB connection.
@@ -53,18 +60,23 @@ trait MongoControl {
     def usingMongo[T](f: MongoConnection => T): T = using(mongoConnection)(f)
     
     /**
-     * Returns the 'attributes' collection.
+     * Returns the loader collection.
      */
-    def attrsCollection(conn: MongoConnection) = mongoDB(conn)(config.getString("mongo.collections.attrs"))
+    def loaderCollection(conn: MongoConnection): MongoCollection = 
+        mongoDB(conn)(config.getString("mongo.collections.loader"))
+        
     /**
-     * Return the 'data' collection.
+     * Returns the bi-temporal collection.
      */
-    def dataCollection(conn: MongoConnection) = mongoDB(conn)(config.getString("mongo.collections.data"))
+    def bitempCollection(conn: MongoConnection): MongoCollection = 
+        mongoDB(conn)(config.getString("mongo.collections.bitemp"))
     
     /**
-     * Creates necessary indexes (if not already done).
+     * Create necessary indexes if they didn't already exist.
+     * 
+     * @param conn a MongoConnection
      */
     def ensureIndexes(conn: MongoConnection) {
-        attrsCollection(conn).ensureIndex(MongoDBObject(("id" -> 1), ("tx" -> 1), ("valid-from" -> 1)))
+        bitempCollection(conn).ensureIndex(MongoDBObject(("id" -> 1), ("tx" -> 1), ("valid-from" -> 1)))
     }
 }

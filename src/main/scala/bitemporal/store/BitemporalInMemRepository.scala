@@ -1,17 +1,21 @@
 package bitemporal.store
 
-import bitemporal._
-import bitemporal.BitemporalStore.{startOfTime,endOfTime}
-import org.joda.time.{DateTime,Interval}
+import org.joda.time.DateTime
+import org.joda.time.Interval
+
+import bitemporal.BitemporalEntity
+import bitemporal.BitemporalRepository
+import bitemporal.BitemporalRepository.endOfTime
+import bitemporal.BitemporalRepository.startOfTime
 
 /**
- * A BitemporalStore that keeps all data in memory.
+ * A BitemporalRepository that keeps all data in memory.
  * Data is never removed but simply prepended to a list so that the latest additions are at the front.
  * Searching is just a linear search through the list. Merging of entities with respect to the valid interval is done
  * at retrieval time. Putting a new entity in the store is simply prepending the entity with the given valid interval to
  * the internal list. So putting is cheap, retrieving is more expensive.
  */
-class BitemporalInMemStore extends BitemporalStore {
+class BitemporalInMemRepository extends BitemporalRepository {
     
     // the list should be kept in reverse transaction time order
     var entities = List.empty[BitemporalEntity]

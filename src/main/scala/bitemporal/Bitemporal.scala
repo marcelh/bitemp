@@ -1,6 +1,7 @@
 package bitemporal
 
-import org.joda.time.{DateTime,Interval}
+import org.joda.time.DateTime
+import org.joda.time.Interval
 import org.joda.time.DateTimeZone.UTC
 
 /**

@@ -7,8 +7,8 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSpec
 import com.typesafe.config.ConfigFactory
 import com.yammer.metrics.reporting.CsvReporter
-import bitemporal.BitemporalStore.endOfTime
-import bitemporal.BitemporalStore.startOfTime
+import bitemporal.BitemporalRepository.endOfTime
+import bitemporal.BitemporalRepository.startOfTime
 import scalax.file.Path
 import org.joda.time.DateTime
 
@@ -31,8 +31,9 @@ class BitemporalMongoDbStoreTest extends FunSpec with BitemporalStoreBehavior wi
     
     def emptyStore = {
         usingMongo { conn =>
-            attrsCollection(conn).drop
-            dataCollection(conn).drop
+            loaderCollection(conn).drop
+            bitempCollection(conn).drop
+            ensureIndexes(conn)
         }
         new BitemporalMongoDbStore(config)
     }

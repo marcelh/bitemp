@@ -36,3 +36,5 @@ libraryDependencies += "com.typesafe" % "config" % "1.0.0"
 libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.1-seq"
 
 libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.1-seq"
+
+libraryDependencies += "com.jsuereth" %% "scala-arm" % "1.3"

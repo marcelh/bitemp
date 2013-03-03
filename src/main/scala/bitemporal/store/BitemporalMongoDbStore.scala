@@ -1,24 +1,20 @@
 package bitemporal.store
 
-import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.util.concurrent.TimeUnit.SECONDS
 import org.joda.time.DateTime
 import org.joda.time.Interval
-import com.mongodb.casbah.Imports.MongoClient
-import com.mongodb.casbah.Imports.MongoDB
+
+import com.mongodb.DBObject
+import com.mongodb.casbah.Imports.JodaDateTimeDoNOk
+import com.mongodb.casbah.Imports.mongoQueryStatements
 import com.mongodb.casbah.Imports.wrapDBObj
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 import com.typesafe.config.Config
-import com.yammer.metrics.scala.Instrumented
-import bitemporal.BitemporalEntity
-import bitemporal.BitemporalStore
-import com.mongodb.casbah.MongoCollection
-import com.mongodb.casbah.MongoConnection
 import com.weiglewilczek.slf4s.Logging
-import com.mongodb.casbah.query.Implicits._
-import com.mongodb.DBObject
-import com.mongodb.casbah.Imports._
+import com.yammer.metrics.scala.Instrumented
+
+import bitemporal.BitemporalEntity
+import bitemporal.BitemporalRepository
 
 
 case class BitemporalMongoDbEntity(
@@ -26,13 +22,11 @@ case class BitemporalMongoDbEntity(
 		values: Map[String, Any],
         trxTimestamp: DateTime,
         validInterval: Interval
-    ) extends BitemporalEntity {
-}
+    ) extends BitemporalEntity
 
 class BitemporalMongoDbStore(val config: Config) 
-		extends BitemporalStore with Instrumented with MongoControl with Logging {
+		extends BitemporalRepository with Instrumented with MongoControl with Logging {
     
-    import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
     RegisterJodaTimeConversionHelpers()
     
     val getTiming = metrics.timer("get-time")
@@ -60,7 +54,7 @@ class BitemporalMongoDbStore(val config: Config)
 		        					("valid-from" $lte validAt) ++ 
 		        					("valid-until" $gt validAt) ++
 		        					("id" -> id)
-		        val cursor = dataCollection(conn).find(qry).sort(MongoDBObject("tx" -> -1)).limit(1)
+		        val cursor = bitempCollection(conn).find(qry).sort(MongoDBObject("tx" -> -1)).limit(1)
 				if (cursor.hasNext) {
 				    val ent = toEntity(cursor.next)
 				    logger.debug("get result: " + ent)
@@ -90,7 +84,7 @@ class BitemporalMongoDbStore(val config: Config)
 	        val extendedValues = values ++ interval2map(validInterval) + ("tx" -> txT) + ("id" -> id)
 	        val mongoObj = MongoDBObject(extendedValues.toList)
 	        usingMongo { conn => 
-	        	dataCollection(conn) += mongoObj
+	        	bitempCollection(conn) += mongoObj
 	        }
 	        
 			BitemporalMongoDbEntity(id, values, txT, validInterval)
