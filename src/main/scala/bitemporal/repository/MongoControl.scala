@@ -1,4 +1,4 @@
-package bitemporal.store
+package bitemporal.repository
 
 import com.typesafe.config.ConfigFactory
 import com.mongodb.casbah.MongoConnection

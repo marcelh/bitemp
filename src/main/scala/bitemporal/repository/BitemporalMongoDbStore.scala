@@ -1,4 +1,4 @@
-package bitemporal.store
+package bitemporal.repository
 
 import org.joda.time.DateTime
 import org.joda.time.Interval

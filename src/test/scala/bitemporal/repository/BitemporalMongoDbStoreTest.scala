@@ -1,16 +1,19 @@
-package bitemporal.store;
+package bitemporal.repository;
 
 import java.io.File
 import java.util.concurrent.TimeUnit.SECONDS
+
+import org.joda.time.DateTime
 import org.joda.time.Interval
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSpec
+
 import com.typesafe.config.ConfigFactory
 import com.yammer.metrics.reporting.CsvReporter
+
 import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
 import scalax.file.Path
-import org.joda.time.DateTime
 
 class BitemporalMongoDbStoreTest extends FunSpec with BitemporalStoreBehavior with BeforeAndAfterAll with MongoControl {
 

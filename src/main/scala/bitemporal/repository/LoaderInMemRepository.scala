@@ -1,9 +1,9 @@
-package bitemporal.store
+package bitemporal.repository
 
-import bitemporal.loader.LoaderRepository
-import bitemporal.loader.LoaderEntity
 import scala.collection.mutable
+
 import bitemporal.loader.LoaderEntity
+import bitemporal.loader.LoaderRepository
 
 /**
  * Loader implementation that stores all entities in an in-memory data structure.

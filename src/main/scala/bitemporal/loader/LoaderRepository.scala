@@ -9,7 +9,7 @@ trait LoaderRepository {
 
     /**
      * Store loader entity and returns Right if this is a new entity.
-     * Does not store this new entity if there is alread an entity with the given id and returns the existing entiry
+     * Does not store this new entity if there is already an entity with the given id and returns the existing entity
      * as Left. 
      */
     def putOrGet(id: String, meta: Map[String, String]): Either[LoaderEntity, LoaderEntity]

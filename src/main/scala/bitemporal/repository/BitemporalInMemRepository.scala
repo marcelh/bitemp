@@ -1,4 +1,4 @@
-package bitemporal.store
+package bitemporal.repository
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
@@ -7,6 +7,14 @@ import bitemporal.BitemporalEntity
 import bitemporal.BitemporalRepository
 import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
+
+
+case class InMemBitemporalEntity(
+        id: String,
+        values: Map[String, Any],
+    	validInterval: Interval,
+    	trxTimestamp: DateTime = new DateTime
+    ) extends BitemporalEntity
 
 /**
  * A BitemporalRepository that keeps all data in memory.
@@ -59,11 +67,3 @@ class BitemporalInMemRepository extends BitemporalRepository {
         sb.toString
     }
 }
-
-case class InMemBitemporalEntity(
-        id: String,
-        values: Map[String, Any],
-    	validInterval: Interval,
-    	trxTimestamp: DateTime = new DateTime
-    ) extends BitemporalEntity
-

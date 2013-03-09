@@ -1,8 +1,9 @@
-package bitemporal.store;
+package bitemporal.repository;
 
-import bitemporal._
-import org.joda.time.{DateTime,Interval}
+import org.joda.time.DateTime
+import org.joda.time.Interval
 import org.scalatest.FunSpec
+
 import bitemporal.BitemporalRepository
 
 /**

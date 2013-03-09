@@ -20,7 +20,7 @@
   *   - it seems more logical (and understandable) to reason about bi-temporality (?) at the entity level than on the 
   *     attribute level.
   *   
-  * An entity is a container for attributes, as such an entity with its attribute (values) is a logical unit and
+  * An entity is a container for attributes, as such an entity with its attributes (values) is a logical unit and
   * should be stored (modified/updated/deleted) as a whole. 
   */
 package object bitemporal {}
