@@ -15,8 +15,11 @@ import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
 import scalax.file.Path
 
-class BitemporalMongoDbStoreTest extends FunSpec with BitemporalStoreBehavior with BeforeAndAfterAll with MongoControl {
-
+class BitemporalMongoDbRepositoryTest extends FunSpec 
+		with BitemporalRepositoryBehavior 
+		with BeforeAndAfterAll 
+		with MongoControl
+{
     val config = ConfigFactory.load()
     val timingsDir = new File("target/timings/" + getClass.getSimpleName)
     
@@ -32,23 +35,23 @@ class BitemporalMongoDbStoreTest extends FunSpec with BitemporalStoreBehavior wi
     	CsvReporter.enable(timingsDir, 1, SECONDS);
     }
     
-    def emptyStore = {
+    def emptyRepository = {
         usingMongo { conn =>
             loaderCollection(conn).drop
             bitempCollection(conn).drop
             ensureIndexes(conn)
         }
-        new BitemporalMongoDbStore(config)
+        new BitemporalMongoDbRepository(config)
     }
     
-    describe("A BitemporalMongoDbStore") {
+    describe("A BitemporalMongoDbRepository") {
     	
     	it("should be able to store something") {
-    		val s = emptyStore
+    		val s = emptyRepository
 			1 to 100 foreach(i => s.put("someid"+i, Map("aap" -> "noot"), new Interval(startOfTime, endOfTime)))
     		1 to 100 foreach(i => assert(s.get("someid"+i, DateTime.now, DateTime.now).isDefined))
     	}
 
-        it should behave like validTimeInBitemporalStore(emptyStore)
+        it should behave like validTimeInBitemporalRepository(emptyRepository)
     }
 }

@@ -2,11 +2,11 @@ package bitemporal
 
 import org.scalatest.Suites
 
-import bitemporal.repository.BitemporalInMemStoreTest
-import bitemporal.repository.BitemporalMongoDbStoreTest
+import bitemporal.repository.BitemporalInMemRepositoryTest
+import bitemporal.repository.BitemporalMongoDbRepositoryTest
 
 class AllSuites extends Suites(
     new BitemporalEntityTest,
-    new BitemporalInMemStoreTest,
-    new BitemporalMongoDbStoreTest
+    new BitemporalInMemRepositoryTest,
+    new BitemporalMongoDbRepositoryTest
 )

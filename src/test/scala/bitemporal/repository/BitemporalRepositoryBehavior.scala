@@ -7,9 +7,9 @@ import org.scalatest.FunSpec
 import bitemporal.BitemporalRepository
 
 /**
- * Define behavior for BitemporalStore implementations.
+ * Define behavior for BitemporalRepository implementations.
  */
-trait BitemporalStoreBehavior  { this: FunSpec =>
+trait BitemporalRepositoryBehavior  { this: FunSpec =>
 
 	val t0 = new DateTime(2000,1,1,0,0)
 	val t1 = new DateTime(2001,1,1,0,0)
@@ -57,9 +57,9 @@ trait BitemporalStoreBehavior  { this: FunSpec =>
     }
     
     /**
-     * Test valid time behavior of BitemporalStore
+     * Test valid time behavior of BitemporalRepository
      */
-    def validTimeInBitemporalStore(store: => BitemporalRepository) {
+    def validTimeInBitemporalRepository(store: => BitemporalRepository) {
 
         it("should return None on all timestamps if we didn't put anything in it") {
             val s = store

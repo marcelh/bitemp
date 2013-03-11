@@ -24,7 +24,7 @@ case class BitemporalMongoDbEntity(
         validInterval: Interval
     ) extends BitemporalEntity
 
-class BitemporalMongoDbStore(val config: Config) 
+class BitemporalMongoDbRepository(val config: Config) 
 		extends BitemporalRepository with Instrumented with MongoControl with Logging {
     
     RegisterJodaTimeConversionHelpers()
