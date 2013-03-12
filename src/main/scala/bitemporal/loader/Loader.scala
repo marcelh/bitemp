@@ -1,10 +1,10 @@
 package bitemporal.loader
 
-import com.weiglewilczek.slf4s.Logging
 import com.yammer.metrics.scala.Instrumented
 
 import bitemporal.BitemporalEntity.keyLoaderId
 import bitemporal.BitemporalRepository
+import grizzled.slf4j.Logging
 
 /**
  * Loader trait for bi-temporal data.

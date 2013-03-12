@@ -10,11 +10,11 @@ import com.mongodb.casbah.Imports.wrapDBObj
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 import com.typesafe.config.Config
-import com.weiglewilczek.slf4s.Logging
 import com.yammer.metrics.scala.Instrumented
 
 import bitemporal.BitemporalEntity
 import bitemporal.BitemporalRepository
+import grizzled.slf4j.Logging
 
 
 case class BitemporalMongoDbEntity(
