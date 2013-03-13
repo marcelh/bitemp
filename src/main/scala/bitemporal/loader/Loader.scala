@@ -22,7 +22,7 @@ trait Loader extends Instrumented with Logging {
     def loaderRepository: LoaderRepository
 
     /**
-     * Perform load operation, giving regular progress feedback by calling the process function.
+     * Perform load operation.
      *
      * @param batch the batch to load
      * @return number of records loaded in case of success
