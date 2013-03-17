@@ -53,5 +53,7 @@ class BitemporalMongoDbRepositoryTest extends FunSpec
     	}
 
         it should behave like validTimeInBitemporalRepository(emptyRepository)
+        it should behave like asOfInBitemporalRepository(emptyRepository)
+        it should behave like asOfIntervalInBitemporalRepository(emptyRepository)
     }
 }

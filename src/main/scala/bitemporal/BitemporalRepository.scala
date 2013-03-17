@@ -21,7 +21,7 @@ trait BitemporalRepository {
      * Get the entity valid on and known at the specified time. 
      * <p>
      * More formally: find the entity which matches the given id, has a validInterval that contains the given validAt 
-     * time-stamp, has a trxTimestamp time-stamp that is the same or is before the given asOf time-stamp AND there 
+     * time-stamp, has a trxTimestamp time-stamp that is the same or is before the given asOf time stamp AND there 
      * exists no other entity which matches the same conditions but has an asOf between the first found entity 
      * and the given trxTimestamp time-stamp.
      * <p>
@@ -33,9 +33,16 @@ trait BitemporalRepository {
      * @param asOf at which time the entity should have been in the store
      * @return Some[Entity] or None when no such entity exists in the store
      */
-    def get(id: String, 
-            validAt: DateTime = DateTime.now, 
-            asOf: DateTime = DateTime.now): Option[BitemporalEntity]
+    def get(id: String, validAt: DateTime, asOf: DateTime): Option[BitemporalEntity]
+    
+    /**
+     * Get the list of entities with the given id and where the as-of time-stamp falls inside the given interval.
+     * 
+     * @param id the entity id (should not be null or empty)
+     * @param asOfInterval the interval in which the as-of time stamp should fall
+     * @return a (possibly empty) sequence of entities ordered from highest (newest) as-of time stamp to lowest (oldest).
+     */
+    def get(id: String, asOfInterval: Interval): Seq[BitemporalEntity]
     
     /**
      * Modify and/or add an entity with the given value to the store.

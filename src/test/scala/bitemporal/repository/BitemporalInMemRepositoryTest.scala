@@ -4,9 +4,11 @@ import org.scalatest.FunSpec
 
 class BitemporalInMemRepositoryTest extends FunSpec with BitemporalRepositoryBehavior {
 
-    def emptyStore = new BitemporalInMemRepository
+    def emptyRepository = new BitemporalInMemRepository
     
     describe("A BitemporalInMemoryStore") {
-        it should behave like validTimeInBitemporalRepository(emptyStore)
+        it should behave like validTimeInBitemporalRepository(emptyRepository)
+        it should behave like asOfInBitemporalRepository(emptyRepository)
+        it should behave like asOfIntervalInBitemporalRepository(emptyRepository)
     }
 }

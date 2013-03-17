@@ -36,11 +36,19 @@ class BitemporalInMemRepository extends BitemporalRepository {
 	 * @param asOf the time stamp at which the entity must have been available in the store
 	 * @return the entity if any
 	 */
-	def get(id: String, 
-            validAt: DateTime = DateTime.now, 
-            asOf: DateTime = DateTime.now): Option[BitemporalEntity] =
+	def get(id: String, validAt: DateTime, asOf: DateTime): Option[BitemporalEntity] =
     {
+        //println(s"get($id, $validAt, $asOf")
+        //entities.foreach(println)
         entities find ( _.matches(id, validAt, asOf) )
+    }
+    
+    def get(id: String, asOfInterval: Interval): Seq[BitemporalEntity] = {
+        for {
+            e <- entities
+            if (e.id == id)
+            if (asOfInterval.contains(e.trxTimestamp))
+        } yield e
     }
     
     /**
