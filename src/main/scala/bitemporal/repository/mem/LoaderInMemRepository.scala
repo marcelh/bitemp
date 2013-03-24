@@ -1,7 +1,6 @@
-package bitemporal.repository
+package bitemporal.repository.mem
 
 import scala.collection.mutable
-
 import bitemporal.loader.LoaderEntity
 import bitemporal.loader.LoaderRepository
 

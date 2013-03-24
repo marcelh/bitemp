@@ -59,22 +59,5 @@ trait BitemporalEntity extends Bitemporal {
 	 */
 	def overlapsOrAbutsWith(interval: Interval): Boolean = 
         this.validInterval.abuts(interval) || this.validInterval.overlaps(interval)
-		
-    /* *
-     * Returns true if this entity can be merged with that entity.
-     * Two entities can be merged when:
-     *   - their ids are the same
-     *   - the values are equal
-     *   - the valid intervals abuts or overlap
-     * 
-     * @param that the entity to compare with
-     * @return true if it can be merged, false if not
-     * /
-    def isMergeableWith(that: BitemporalEntity): Boolean = {
-	    this.id == that.id &&
-	    this.values == that.values &&
-	    overlapsOrAbutsWith(that.validInterval)
-	}
-	*/
 }
 

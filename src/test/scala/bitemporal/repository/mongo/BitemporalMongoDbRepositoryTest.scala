@@ -13,6 +13,8 @@ import com.yammer.metrics.reporting.CsvReporter
 
 import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
+import bitemporal.repository.mongo.BitemporalMongoDbRepository
+import bitemporal.repository.mongo.MongoControl
 import scalax.file.Path
 
 class BitemporalMongoDbRepositoryTest extends FunSpec 

@@ -1,8 +1,7 @@
-package bitemporal.repository
+package bitemporal.repository.mem
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
-
 import bitemporal.BitemporalEntity
 import bitemporal.BitemporalRepository
 import bitemporal.BitemporalRepository.endOfTime
@@ -38,8 +37,6 @@ class BitemporalInMemRepository extends BitemporalRepository {
 	 */
 	def get(id: String, validAt: DateTime, asOf: DateTime): Option[BitemporalEntity] =
     {
-        //println(s"get($id, $validAt, $asOf")
-        //entities.foreach(println)
         entities find ( _.matches(id, validAt, asOf) )
     }
     

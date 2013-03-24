@@ -1,6 +1,4 @@
-package bitemporal.repository
-
-import com.typesafe.config.ConfigFactory
+package bitemporal.repository.mongo
 import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.MongoDB
 import com.typesafe.config.Config
