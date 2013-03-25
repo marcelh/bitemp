@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone.UTC
 import org.joda.time.Interval
 
-
+/** Companion object for the BitemporalRepository trait. */
 object BitemporalRepository {
     /** The smallest possible time stamp that can be stored */ 
     val startOfTime = new DateTime(0, 1, 1, 0, 0, UTC)
@@ -36,19 +36,20 @@ trait BitemporalRepository {
     def get(id: String, validAt: DateTime, asOf: DateTime): Option[BitemporalEntity]
     
     /**
-     * Get the list of entities with the given id and where the as-of time-stamp falls inside the given interval.
+     * Get the list of entities with the given id and where the transaction time-stamp falls inside the given interval.
      * 
      * @param id the entity id (should not be null or empty)
      * @param asOfInterval the interval in which the as-of time stamp should fall
-     * @return a (possibly empty) sequence of entities ordered from highest (newest) as-of time stamp to lowest (oldest).
+     * @return a (possibly empty) sequence of entities ordered from highest (newest) transaction time stamp to lowest 
+     * (oldest).
      */
     def get(id: String, asOfInterval: Interval): Seq[BitemporalEntity]
     
     /**
-     * Modify and/or add an entity with the given value to the store.
+     * Add an entity with the given value to the store.
      * <p>
-     * Depending on the implementation entities could be split, merged or created.
-     * The returned entity might have a validInterval that is larger than specified.
+     * Although we don't make any assumption about the underlying data store, the most viable way to support the above
+     * functionality is to simply store a new entity version with each call to this method.  
      * 
      * @param id the entity id (should not be null or empty)
      * @param values the attribute values for the entity

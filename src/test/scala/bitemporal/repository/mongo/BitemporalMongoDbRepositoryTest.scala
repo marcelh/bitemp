@@ -1,4 +1,4 @@
-package bitemporal.repository;
+package bitemporal.repository.mongo
 
 import java.io.File
 import java.util.concurrent.TimeUnit.SECONDS
@@ -13,8 +13,7 @@ import com.yammer.metrics.reporting.CsvReporter
 
 import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
-import bitemporal.repository.mongo.BitemporalMongoDbRepository
-import bitemporal.repository.mongo.MongoControl
+import bitemporal.repository.BitemporalRepositoryBehavior
 import scalax.file.Path
 
 class BitemporalMongoDbRepositoryTest extends FunSpec 
@@ -39,7 +38,6 @@ class BitemporalMongoDbRepositoryTest extends FunSpec
     
     def emptyRepository = {
         usingMongo { conn =>
-            loaderCollection(conn).drop
             bitempCollection(conn).drop
             ensureIndexes(conn)
         }

@@ -5,20 +5,25 @@ import org.joda.time.Interval
 import org.joda.time.DateTimeZone.UTC
 
 /**
- * Bi-temporal trait with the two time dimensions.
+ * Bi-temporal trait with the two time dimensions; the transaction time-stamp and the valid time (interval).
  */
 trait Bitemporal {
+    
+    /** Transaction time-stamp */
     def trxTimestamp: DateTime
+    
+    /** Time interval for which this entity is valid. */
     def validInterval: Interval
-}
-
-object BitemporalEntity {
-    val keyLoaderId = "loader_id"
 }
 
 /**
  * A bi-temporal entity with the two time dimensions, an unique entity identifier and a map with attribute identifier 
  * to attribute value.
+ * <p>
+ * Note that we need the identifier because we going to have multiple versions (instances) of the same entity in our 
+ * repository. Each with its own transaction time-stamp and possibly with a different valid interval.
+ * The identifier is the connection between the different versions.
+ * In that sense it is not unique but it does uniquely identify a set of instances of the same entity.   
  */
 trait BitemporalEntity extends Bitemporal {
     def id: String

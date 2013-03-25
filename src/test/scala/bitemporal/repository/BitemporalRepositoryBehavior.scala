@@ -1,11 +1,12 @@
-package bitemporal.repository;
+package bitemporal.repository
 
 import org.joda.time.DateTime
 import org.joda.time.DateTime.now
 import org.joda.time.Interval
 import org.scalatest.FunSpec
-import bitemporal.BitemporalRepository
+
 import bitemporal.BitemporalEntity
+import bitemporal.BitemporalRepository
 
 /**
  * Define behavior for BitemporalRepository implementations.

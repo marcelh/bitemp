@@ -2,6 +2,7 @@ package bitemporal.repository.mem
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
+
 import bitemporal.BitemporalEntity
 import bitemporal.BitemporalRepository
 import bitemporal.BitemporalRepository.endOfTime

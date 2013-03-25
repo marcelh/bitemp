@@ -1,7 +1,7 @@
 package bitemporal.repository.mem
 
 import org.scalatest.FunSpec
-import bitemporal.repository.mem.BitemporalInMemRepository
+
 import bitemporal.repository.BitemporalRepositoryBehavior
 
 class BitemporalInMemRepositoryTest extends FunSpec with BitemporalRepositoryBehavior {

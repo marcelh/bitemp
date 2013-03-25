@@ -1,9 +1,10 @@
 package bitemporal.repository.mongo
+
+import com.mongodb.casbah.MongoCollection
 import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.MongoDB
-import com.typesafe.config.Config
 import com.mongodb.casbah.commons.MongoDBObject
-import com.mongodb.casbah.MongoCollection
+import com.typesafe.config.Config
 
 /**
  * Trait to control MongDB connections, databases and collections.
@@ -16,7 +17,6 @@ trait MongoControl {
      *  - mongo.host: host name or IP number where MongoDB is running
      *  - mongo.port: port number of the MongoDB instance
      *  - mongo.database: name of the MongoDB database
-     *  - mongo.collections.loader: name of the collection with info about loaded files
      *  - mongo.collections.bitemp: name of the collection for the bi-temporal data
      * 
      * @return the configuration object containing MongoDB connection properties and collection names.
@@ -57,12 +57,6 @@ trait MongoControl {
      */
     def usingMongo[T](f: MongoConnection => T): T = using(mongoConnection)(f)
     
-    /**
-     * Returns the loader collection.
-     */
-    def loaderCollection(conn: MongoConnection): MongoCollection = 
-        mongoDB(conn)(config.getString("mongo.collections.loader"))
-        
     /**
      * Returns the bi-temporal collection.
      */

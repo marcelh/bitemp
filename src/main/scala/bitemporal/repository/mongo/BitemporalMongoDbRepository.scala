@@ -2,16 +2,17 @@ package bitemporal.repository.mongo
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
+
 import com.mongodb.DBObject
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 import com.typesafe.config.Config
 import com.yammer.metrics.scala.Instrumented
+
 import bitemporal.BitemporalEntity
 import bitemporal.BitemporalRepository
 import grizzled.slf4j.Logging
-import bitemporal.repository.mongo.MongoControl
 
 
 case class BitemporalMongoDbEntity(
