@@ -14,6 +14,7 @@ import com.yammer.metrics.reporting.CsvReporter
 import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
 import bitemporal.repository.BitemporalRepositoryBehavior
+import bitemporal.repository.mongo.BitemporalMongoDbRepository.SPECIAL_KEYS
 import scalax.file.Path
 
 class BitemporalMongoDbRepositoryTest extends FunSpec 
@@ -26,8 +27,8 @@ class BitemporalMongoDbRepositoryTest extends FunSpec
     
     /* filter out MongoDB specific values so we can simply compare the 'values' map */
     override def filterActual(orig: Map[String, Any]): Map[String, Any] = {
-        val specialKeys = Set("_id", "id", "valid-from", "valid-until", "tx")
-		orig filter { case (k, v) => !specialKeys.contains(k) }
+        val specialKeys = SPECIAL_KEYS + "_id"
+		orig filterNot { case (k, v) => specialKeys.contains(k) }
     }
     
     override def beforeAll(configMap: Map[String, Any]) {

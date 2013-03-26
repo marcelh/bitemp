@@ -13,7 +13,7 @@ case class InMemBitemporalEntity(
         id: String,
         values: Map[String, Any],
     	validInterval: Interval,
-    	trxTimestamp: DateTime = new DateTime
+    	knownAt: DateTime
     ) extends BitemporalEntity
 
 /**
@@ -25,7 +25,7 @@ case class InMemBitemporalEntity(
  */
 class BitemporalInMemRepository extends BitemporalRepository {
     
-    // the list should be kept in reverse transaction time order
+    // the list should be kept in reverse known-at time order
     var entities = List.empty[BitemporalEntity]
 
 	/**
@@ -45,7 +45,7 @@ class BitemporalInMemRepository extends BitemporalRepository {
         for {
             e <- entities
             if (e.id == id)
-            if (asOfInterval.contains(e.trxTimestamp))
+            if (asOfInterval.contains(e.knownAt))
         } yield e
     }
     
@@ -59,8 +59,9 @@ class BitemporalInMemRepository extends BitemporalRepository {
      */
     def put(id: String,
             values: Map[String, Any],
-            validInterval: Interval = new Interval(startOfTime,endOfTime)): BitemporalEntity = {
-        val newRecord = InMemBitemporalEntity(id, values, validInterval, new DateTime)
+            validInterval: Interval = new Interval(startOfTime,endOfTime),
+            knownAt: DateTime = DateTime.now): BitemporalEntity = {
+        val newRecord = InMemBitemporalEntity(id, values, validInterval, knownAt)
         entities = newRecord :: entities
         newRecord
     }

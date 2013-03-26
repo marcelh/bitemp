@@ -5,15 +5,15 @@ import org.joda.time.Interval
 import org.joda.time.DateTimeZone.UTC
 
 /**
- * Bi-temporal trait with the two time dimensions; the transaction time-stamp and the valid time (interval).
+ * Bi-temporal trait with the two time dimensions; the known at time-stamp and the valid time (interval).
  */
 trait Bitemporal {
     
-    /** Transaction time-stamp */
-    def trxTimestamp: DateTime
-    
     /** Time interval for which this entity is valid. */
     def validInterval: Interval
+    
+    /** Time-stamp at which this entity became known (in the repository) */
+    def knownAt: DateTime
 }
 
 /**
@@ -21,7 +21,7 @@ trait Bitemporal {
  * to attribute value.
  * <p>
  * Note that we need the identifier because we going to have multiple versions (instances) of the same entity in our 
- * repository. Each with its own transaction time-stamp and possibly with a different valid interval.
+ * repository. Each with its own known-at time-stamp and possibly with a different valid interval.
  * The identifier is the connection between the different versions.
  * In that sense it is not unique but it does uniquely identify a set of instances of the same entity.   
  */
@@ -35,7 +35,7 @@ trait BitemporalEntity extends Bitemporal {
      * @param asOf time-stamp to compare against trxTimestamp
      * @return true if it existed, false if not
      */
-    def existsAt(asOf: DateTime): Boolean = trxTimestamp.isBefore(asOf) || trxTimestamp.isEqual(asOf)
+    def existsAt(asOf: DateTime): Boolean = knownAt.isBefore(asOf) || knownAt.isEqual(asOf)
     
     /**
      * Returns true is this entity is/was valid on the given time-stamp

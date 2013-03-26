@@ -36,11 +36,11 @@ trait BitemporalRepository {
     def get(id: String, validAt: DateTime, asOf: DateTime): Option[BitemporalEntity]
     
     /**
-     * Get the list of entities with the given id and where the transaction time-stamp falls inside the given interval.
+     * Get the list of entities with the given id and where the known-at time-stamp falls inside the given interval.
      * 
      * @param id the entity id (should not be null or empty)
      * @param asOfInterval the interval in which the as-of time stamp should fall
-     * @return a (possibly empty) sequence of entities ordered from highest (newest) transaction time stamp to lowest 
+     * @return a (possibly empty) sequence of entities ordered from highest (newest) known-at time stamp to lowest 
      * (oldest).
      */
     def get(id: String, asOfInterval: Interval): Seq[BitemporalEntity]
@@ -53,9 +53,11 @@ trait BitemporalRepository {
      * 
      * @param id the entity id (should not be null or empty)
      * @param values the attribute values for the entity
+     * @param knownAt the time this entity become known in the repository
      * @return the created entity
      */
     def put(id: String,
             values: Map[String, Any], 
-            validInterval: Interval): BitemporalEntity
+            validInterval: Interval,
+            knownAt: DateTime = DateTime.now): BitemporalEntity
 }

@@ -3,8 +3,7 @@
   * 
   * A bi-temporal data store stores data with two time dimensions.
   * 
-  * One is te ''know at'' time. 
-  * Which is here called the transaction time.
+  * One is the ''know at'' time. 
   * It is the time when a fact (data) is current/present in the database as stored data.
   *
   * The other is the ''valid at'' time interval. 

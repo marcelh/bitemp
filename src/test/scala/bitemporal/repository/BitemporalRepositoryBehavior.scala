@@ -13,6 +13,7 @@ import bitemporal.BitemporalRepository
  */
 trait BitemporalRepositoryBehavior  { this: FunSpec =>
 
+    // time stamps for valid-at / valid interval
 	val t0 = new DateTime(2000,1,1,0,0)
 	val t1 = new DateTime(2001,1,1,0,0)
 	val t2 = new DateTime(2002,1,1,0,0)
@@ -24,6 +25,13 @@ trait BitemporalRepositoryBehavior  { this: FunSpec =>
 	val t8 = new DateTime(2008,1,1,0,0)
 	val t9 = new DateTime(2009,1,1,0,0)
 	val tAll = Seq(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9)
+
+	// time stamps for known-at / as-of
+	val ka1 = new DateTime(2012,1,1,0,0)
+    val ka2 = new DateTime(2012,2,1,0,0)
+    val ka3 = new DateTime(2012,3,1,0,0)
+    val ka4 = new DateTime(2012,4,1,0,0)
+    val ka5 = new DateTime(2012,5,1,0,0)
 	
 	val valuesA = Map("attr1" -> "abc")
 	val valuesB = Map("attr1" -> "def")
@@ -70,7 +78,7 @@ trait BitemporalRepositoryBehavior  { this: FunSpec =>
     def assertEqual(index: Int, e1: BitemporalEntity, e2: BitemporalEntity) {
         assert(e1.id === e2.id, s"id not equal at index $index")
         assert(e1.validInterval === e2.validInterval, s"validInterval not equal at index $index")
-        assert(e1.trxTimestamp === e2.trxTimestamp, s"trxTimestamp not equal at index $index")
+        assert(e1.knownAt === e2.knownAt, s"trxTimestamp not equal at index $index")
         assert(filterActual(e1.values) === filterActual(e2.values), s"values not equal at index $index")
     }
 
@@ -127,57 +135,54 @@ trait BitemporalRepositoryBehavior  { this: FunSpec =>
         
         it("should return either None or the value we just put in depending on the asOf timestamp") {
             val r = repository
-            val e1 = r.put("e1", valuesA, new Interval(t1, t3))
-            Thread.sleep(2) // make sure to have a gap between the two transaction time stamps
-            val e2 = r.put("e1", valuesB, new Interval(t1, t3))
+            val e1 = r.put("e1", valuesA, new Interval(t1, t3), ka1)
+            val e2 = r.put("e1", valuesB, new Interval(t1, t3), ka2)
             
-            assertNoEntityFor(r, "e1", e2.trxTimestamp.minusMillis(1), t2)
-            assertEqualFor(r, "e1", valuesA, e1.trxTimestamp, t2)
-            assertEqualFor(r, "e1", valuesA, e1.trxTimestamp.plusMillis(1), t2)
-            assertEqualFor(r, "e1", valuesB, e2.trxTimestamp, t2)
-            assertEqualFor(r, "e1", valuesB, e2.trxTimestamp.plusMillis(1), t2)
+            assertNoEntityFor(r, "e1", e2.knownAt.minusMillis(1), t2)
+            assertEqualFor(r, "e1", valuesA, e1.knownAt, t2)
+            assertEqualFor(r, "e1", valuesA, e1.knownAt.plusMillis(1), t2)
+            assertEqualFor(r, "e1", valuesB, e2.knownAt, t2)
+            assertEqualFor(r, "e1", valuesB, e2.knownAt.plusMillis(1), t2)
         }
     }
     
     def asOfIntervalInBitemporalRepository(repository: => BitemporalRepository) {
         def setup = {
 	    	val r = repository
-			val e1 = r.put("e1", valuesA, new Interval(t1, t3))
-			Thread.sleep(2) // make sure to have a gap between the two transaction time stamps
-			val e2 = r.put("e1", valuesB, new Interval(t1, t3))
-			Thread.sleep(2) // make sure to have a gap between the two transaction time stamps
-			val e3 = r.put("e1", valuesC, new Interval(t1, t3))
+			val e1 = r.put("e1", valuesA, new Interval(t1, t3), ka1)
+			val e2 = r.put("e1", valuesB, new Interval(t1, t3), ka2)
+			val e3 = r.put("e1", valuesC, new Interval(t1, t3), ka3)
 			(r, e1, e2, e3)
         }
         
         it("should return an empty sequence if the as-of range is before the first entity") {
             val (r, e1, e2, e3) = setup
-            val result = r.get("e1", new Interval(e1.trxTimestamp.minusMillis(10), e1.trxTimestamp.minusMillis(5)))
+            val result = r.get("e1", new Interval(e1.knownAt.minusMillis(10), e1.knownAt.minusMillis(5)))
             assert(result.isEmpty)
         }
         it("should return an empty sequence if the as-of range is after the last entity") {
             val (r, e1, e2, e3) = setup
-            val result = r.get("e1", new Interval(e3.trxTimestamp.plusMillis(5), e3.trxTimestamp.plusMillis(10)))
+            val result = r.get("e1", new Interval(e3.knownAt.plusMillis(5), e3.knownAt.plusMillis(10)))
             assert(result.isEmpty)
         }
         it("should return a sequence with only e1 if the as-of range only includes the e1 entity") {
             val (r, e1, e2, e3) = setup
-            val result = r.get("e1", new Interval(e1.trxTimestamp.minusMillis(5), e1.trxTimestamp.plusMillis(1)))
+            val result = r.get("e1", new Interval(e1.knownAt.minusMillis(5), e1.knownAt.plusMillis(1)))
             assertEqual(result, Seq(e1))
         }
         it("should return a sequence with e1 and e2 if the as-of range includes the e1 and e2 entities") {
             val (r, e1, e2, e3) = setup
-            val result = r.get("e1", new Interval(e1.trxTimestamp.minusMillis(5), e2.trxTimestamp.plusMillis(1)))
+            val result = r.get("e1", new Interval(e1.knownAt.minusMillis(5), e2.knownAt.plusMillis(1)))
             assertEqual(result, Seq(e2, e1)) // note the ordering is relevant!
         }
         it("should return a sequence with e1, e2 and e3 if the as-of range includes the e1, e2 and e3 entities") {
             val (r, e1, e2, e3) = setup
-            val result = r.get("e1", new Interval(e1.trxTimestamp.minusMillis(5), e3.trxTimestamp.plusMillis(5)))
+            val result = r.get("e1", new Interval(e1.knownAt.minusMillis(5), e3.knownAt.plusMillis(5)))
             assertEqual(result, Seq(e3, e2, e1)) // note the ordering is relevant!
         }
         it("should return a sequence with e2 and e3 if the as-of range includes the e2 and e3 entities") {
             val (r, e1, e2, e3) = setup
-            val result = r.get("e1", new Interval(e2.trxTimestamp.minusMillis(1), e3.trxTimestamp.plusMillis(1)))
+            val result = r.get("e1", new Interval(e2.knownAt.minusMillis(1), e3.knownAt.plusMillis(1)))
             assertEqual(result, Seq(e3, e2)) // note the ordering is relevant!
         }
     }
