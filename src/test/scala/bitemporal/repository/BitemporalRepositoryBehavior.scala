@@ -84,7 +84,7 @@ trait BitemporalRepositoryBehavior  { this: FunSpec =>
 
     def assertEqual(s1: Seq[BitemporalEntity], s2: Seq[BitemporalEntity]) {
         s1.zip(s2).zipWithIndex.foreach{ case ((e1, e2), index) => assertEqual(index, e1, e2) }
-        assert(s1.size === s2.size, s"s1=$s1 s2=$s2; ")
+        assert(s1.size === s2.size, s"size mismatch: s1.size=${s1.size} s2.size=${s2.size}; ")
     }
     
     /**

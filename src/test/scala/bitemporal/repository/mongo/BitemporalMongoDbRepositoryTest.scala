@@ -2,27 +2,27 @@ package bitemporal.repository.mongo
 
 import java.io.File
 import java.util.concurrent.TimeUnit.SECONDS
-
 import org.joda.time.DateTime
 import org.joda.time.Interval
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSpec
-
 import com.typesafe.config.ConfigFactory
 import com.yammer.metrics.reporting.CsvReporter
-
 import bitemporal.BitemporalRepository.endOfTime
 import bitemporal.BitemporalRepository.startOfTime
 import bitemporal.repository.BitemporalRepositoryBehavior
 import bitemporal.repository.mongo.BitemporalMongoDbRepository.SPECIAL_KEYS
 import scalax.file.Path
+import com.mongodb.MongoException
 
 class BitemporalMongoDbRepositoryTest extends FunSpec 
 		with BitemporalRepositoryBehavior 
 		with BeforeAndAfterAll 
 		with MongoControl
 {
-    val config = ConfigFactory.load()
+    implicit val config = ConfigFactory.load()
+    
+	val collectionName = "bitemp-test"
     val timingsDir = new File("target/timings/" + getClass.getSimpleName)
     
     /* filter out MongoDB specific values so we can simply compare the 'values' map */
@@ -39,10 +39,16 @@ class BitemporalMongoDbRepositoryTest extends FunSpec
     
     def emptyRepository = {
         usingMongo { conn =>
-            bitempCollection(conn).drop
-            ensureIndexes(conn)
+            mongoDB(conn)(collectionName).drop
         }
-        new BitemporalMongoDbRepository(config)
+		val repo = new BitemporalMongoDbRepository(collectionName)
+    	try {
+    		repo.ensureIndexes
+    	} catch {
+    	    case e: MongoException => pending
+    	    case e: Throwable => println(s"thrown: $e"); pending
+    	}
+    	repo
     }
     
     describe("A BitemporalMongoDbRepository") {

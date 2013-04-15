@@ -5,6 +5,7 @@ import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.MongoDB
 import com.mongodb.casbah.commons.MongoDBObject
 import com.typesafe.config.Config
+import com.mongodb.MongoException
 
 /**
  * Trait to control MongDB connections, databases and collections.
@@ -17,9 +18,8 @@ trait MongoControl {
      *  - mongo.host: host name or IP number where MongoDB is running
      *  - mongo.port: port number of the MongoDB instance
      *  - mongo.database: name of the MongoDB database
-     *  - mongo.collections.bitemp: name of the collection for the bi-temporal data
      * 
-     * @return the configuration object containing MongoDB connection properties and collection names.
+     * @return the configuration object containing MongoDB connection properties.
      */
     def config: Config
     
@@ -29,11 +29,11 @@ trait MongoControl {
         MongoConnection(host, port)
     }
     
-    private def mongoDB(conn: MongoConnection): MongoDB = {
+    def mongoDB(conn: MongoConnection): MongoDB = {
         val database = config.getString("mongo.database")
     	conn(database)
     }
-
+    
     /**
      * Call function with given MongoConnection, closing the connection afterwards.
      * 
@@ -57,18 +57,4 @@ trait MongoControl {
      */
     def usingMongo[T](f: MongoConnection => T): T = using(mongoConnection)(f)
     
-    /**
-     * Returns the bi-temporal collection.
-     */
-    def bitempCollection(conn: MongoConnection): MongoCollection = 
-        mongoDB(conn)(config.getString("mongo.collections.bitemp"))
-    
-    /**
-     * Create necessary indexes if they didn't already exist.
-     * 
-     * @param conn a MongoConnection
-     */
-    def ensureIndexes(conn: MongoConnection) {
-        bitempCollection(conn).ensureIndex(MongoDBObject(("id" -> 1), ("tx" -> 1), ("valid-from" -> 1)))
-    }
 }
